@@ -1,7 +1,7 @@
 import { db } from '@/db/db';
 import { urlTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 async function getShortUrl(uid: string) {
   const res = await db
@@ -14,20 +14,20 @@ async function getShortUrl(uid: string) {
     throw new Error('No url found');
   }
 
-  return res[0].longUrl;
+  return res.pop();
 }
 
-interface PageProps {
-  params: Promise<{
-    uid: string;
-  }>;
-}
-
-export default async function Page({ params }: PageProps) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ uid: string }> }
+) {
   const { uid } = await params;
   try {
     const data = await getShortUrl(uid);
-    redirect(data);
+    if (!data) {
+      notFound();
+    }
+    return Response.redirect(data?.longUrl, 301);
   } catch (error: unknown) {
     console.log(error);
     notFound();

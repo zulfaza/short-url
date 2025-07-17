@@ -17,8 +17,14 @@ async function getShortUrl(uid: string) {
   return res[0].longUrl;
 }
 
-export default async function Page({ params }: { params: { uid: string } }) {
-  const { uid } = params;
+interface PageProps {
+  params: Promise<{
+    uid: string;
+  }>;
+}
+
+export default async function Page({ params }: PageProps) {
+  const { uid } = await params;
   try {
     const data = await getShortUrl(uid);
     redirect(data);
